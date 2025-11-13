@@ -1,0 +1,203 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Text;
+using System.Threading.Tasks;
+using Azure;
+
+namespace FtpRxtoJsonService.css
+{
+    public class WebRequestGet
+    {
+        public string ftpServer { get; set; }
+        public string ftpUsername { get; set; }
+        public string ftpPassword { get; set; }
+        public ILogger _logger { get; set; }
+
+        /*public FileStream Download(string path)
+        {
+            // Get the object used to communicate with the server.
+            FtpWebRequest request = (FtpWebRequest)WebRequest.Create(ftpServer+path);
+            request.Method = WebRequestMethods.Ftp.DownloadFile;
+
+            // This example assumes the FTP site uses anonymous logon.
+            request.Credentials = new NetworkCredential(ftpUsername, ftpPassword);
+
+            FtpWebResponse response = (FtpWebResponse)request.GetResponse();
+
+            Stream responseStream = response.GetResponseStream();
+            StreamReader reader = new StreamReader(responseStream);
+            FileStream file = new FileStream("downloaded_file.rx", FileMode.Create);
+            responseStream.CopyTo(file);
+            Console.WriteLine(reader.ReadToEnd());
+            Console.WriteLine($"Download Complete, status {response.StatusDescription}");
+            response.Close();
+            reader.Close();
+            return file;
+        }*/
+        public string Download(string path)
+        {
+            string localFile = Path.Combine(Directory.GetCurrentDirectory(), "downloaded_file.rx");
+            try
+            {
+                // Crear la solicitud FTP
+                FtpWebRequest request = (FtpWebRequest)WebRequest.Create(ftpServer + path);
+                request.Method = WebRequestMethods.Ftp.DownloadFile;
+                request.Credentials = new NetworkCredential(ftpUsername, ftpPassword);
+                // Obtener respuesta del servidor
+                using (FtpWebResponse response = (FtpWebResponse)request.GetResponse())
+                using (Stream responseStream = response.GetResponseStream())
+                using (FileStream outputFile = new FileStream(localFile, FileMode.Create, FileAccess.Write))
+                {
+                    // Copiar bytes del FTP al archivo local
+                    responseStream.CopyTo(outputFile);
+                }
+                // Devuelves la ruta local del archivo descargado
+            }
+            catch (WebException ex)
+            {
+                _logger.LogError($"An error while downloading file: {ex.Message}");
+            }
+            return localFile;
+        }
+        public async Task Upload(string localFilePath, string remotePath)//remotePath es tanto donde se guarda como el nombre del archivo
+        {
+            try
+            {
+                // remotePath debe incluir el nombre de archivo remoto (ej: "processed/98765-5-5.rx")
+                var request = (FtpWebRequest)WebRequest.Create(ftpServer + remotePath);
+                request.Method = WebRequestMethods.Ftp.UploadFile;
+                request.Credentials = new NetworkCredential(ftpUsername, ftpPassword);
+
+                // Opciones recomendadas
+                request.UseBinary = true;
+                request.UsePassive = true;
+                request.KeepAlive = false; // cerrar la conexión al terminar
+
+                // Abrir el archivo local y escribir al stream del request (async)
+                using (FileStream fileStream = File.Open(localFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (Stream requestStream = await request.GetRequestStreamAsync())
+                {
+                    await fileStream.CopyToAsync(requestStream);
+                }
+
+                // Obtener la respuesta (síncrono en la API, pero rápido)
+                FtpWebResponse response = (FtpWebResponse)await request.GetResponseAsync();
+
+            }
+            catch (WebException ex)
+            {
+
+                _logger.LogError($"An error while uploading file: {ex.Message}");
+
+            }
+        }
+        public bool MoveFtpFile(string source, string destination)
+        {
+
+            Uri uriSource = new Uri(this.ftpServer  + source, UriKind.Absolute );
+            Uri uriDestination = new Uri(this.ftpServer + destination, UriKind.Absolute );
+
+            // Do the files exist?
+/*            if (!FtpFileExists(uriSource.AbsolutePath))
+            {
+                throw (new FileNotFoundException(string.Format("Source '{0}' not found!", uriSource.AbsolutePath)));
+            }
+
+            if (FtpFileExists(uriDestination.AbsolutePath))
+            {
+                throw (new ApplicationException(string.Format("Target '{0}' already exists!", uriDestination.AbsolutePath)));
+            }*/
+            Uri targetUriRelative = uriSource.MakeRelativeUri(uriDestination);
+
+            //perform rename
+            var ftp = (FtpWebRequest)WebRequest.Create(uriSource.AbsoluteUri);
+            ftp.Credentials = new NetworkCredential(ftpUsername, ftpPassword);
+            ftp.Method = WebRequestMethods.Ftp.Rename;
+            ftp.RenameTo = Uri.UnescapeDataString(targetUriRelative.OriginalString);
+
+            FtpWebResponse response = (FtpWebResponse)ftp.GetResponse();
+
+            return true;
+
+        }
+        /*  public async Task<bool> MoveFtpFile(string sourceFilePath="", string destinationFilePath = "")
+        {
+            try
+            {
+                // Create the FtpWebRequest for renaming the file
+                FtpWebRequest request = (FtpWebRequest)WebRequest.Create(ftpServer + sourceFilePath);
+                request.Method = WebRequestMethods.Ftp.Rename;
+                request.Credentials = new NetworkCredential(ftpUsername, ftpPassword);
+                request.UsePassive = true; 
+                request.RenameTo = destinationFilePath; // The new path and name for the file
+            
+                WebResponse response = request.GetResponse();
+                return true;
+            }
+            catch (WebException ex)
+            {
+                _logger.LogError("Error while moving file:" + ex.Message);
+                return false;
+                //throw new Exception($"An error while moving file: {ex.Message}");
+            }
+        }
+*/        
+        public void Delete(string path)
+        {
+            //
+        }
+        public string[] ListDirectories(string dirpath="")
+        {
+            string[] dir;
+            var content = new List<string>();
+            // Crear la solicitud FTP
+            FtpWebRequest request = (FtpWebRequest)WebRequest.Create(ftpServer + dirpath);
+            request.Method = WebRequestMethods.Ftp.ListDirectory;
+            request.Credentials = new NetworkCredential(ftpUsername, ftpPassword);
+            request.UsePassive = true;
+
+            using (FtpWebResponse response = (FtpWebResponse)request.GetResponse())
+            using (Stream responseStream = response.GetResponseStream())
+            {
+                // Lee la respuesta y la escribe en la cadena de salida
+                StreamReader list = new StreamReader(responseStream);
+                foreach (string line in list.ReadToEnd().Split('\n'))
+                {
+                    content.Add(line.Trim());
+
+                }
+                dir = content.ToArray();
+            }
+            return dir;
+        }
+        public bool IsRxOnDir(string dirpath)
+        {
+            string[] dirList = ListDirectories(dirpath);
+            foreach (string dir in dirList)
+            {
+
+            }
+            return false;
+
+        }
+        public string[] GetRxFileName(string dirpath ="")
+        {
+            string[] dirList = ListDirectories(dirpath);
+            var rxfiles = new List<string>();
+            // Dividir por salto de línea y limpiar espacios
+            //string[] files = dirList.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            // Filtrar solo los que terminen con ".rx"
+            foreach (string file in dirList)
+            {
+                if (file.EndsWith(".rx"))
+                    rxfiles.Add(file);
+            }
+            string[] rx = rxfiles.ToArray();
+            return rx;
+        }
+    }
+
+}
