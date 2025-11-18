@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Data;
 
 using Microsoft.Data.SqlClient;
+using static Azure.Core.HttpHeader;
 
 namespace FtpRxtoJsonService.css
 {
 
     public class WebOrders
     {
-
+        public int custnum {  get; set; }
         public string ponumber { get; set; }
         public double rsphere { get; set; }
         public double rcylinder { get; set; }
@@ -32,11 +33,11 @@ namespace FtpRxtoJsonService.css
         public int design { get; set; }
         public int tint { get; set; }
         public string notes { get; set; }
-        public int year { get; set; }
+        //public int year { get; set; }
         public string NumPaquete { get; set; }
         public decimal fardip { get; set; }
         public string connectionString { get; set; }
-        private const string storedProcedureName = "usp_InsertOrder";
+        private const string storedProcedureName = "usp_InsertWebOrder";
         public ILogger _logger { get; set; }
 
         public DataTable GetOrders()
@@ -44,7 +45,7 @@ namespace FtpRxtoJsonService.css
             var datatable = new DataTable();
             using (SqlConnection con = new SqlConnection(connectionString))
             {
-                using (SqlCommand cmd = new SqlCommand("select * from TblWebOrders", con))
+                using (SqlCommand cmd = new SqlCommand("select * from TblWebOrdersAugen", con))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     using (SqlDataAdapter adapter = new SqlDataAdapter(cmd))
@@ -56,10 +57,8 @@ namespace FtpRxtoJsonService.css
             return datatable;
         }
 
-
         public bool InsertOrder()
         {
-            WebOrders order = this;
             int rows;
             int returnValue;
             try
@@ -70,31 +69,31 @@ namespace FtpRxtoJsonService.css
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         // Add parameters
-                        cmd.Parameters.AddWithValue("@ponumber", order.ponumber);
-                        cmd.Parameters.AddWithValue("@rsphere", order.rsphere);
-                        cmd.Parameters.AddWithValue("@rcylinder", order.rcylinder);
-                        cmd.Parameters.AddWithValue("@raxis", order.raxis);
-                        cmd.Parameters.AddWithValue("@raddition", order.raddition);
-                        cmd.Parameters.AddWithValue("@lsphere", order.lsphere);
-                        cmd.Parameters.AddWithValue("@lcylinder", order.lcylinder);
-                        cmd.Parameters.AddWithValue("@laxis", order.laxis);
-                        cmd.Parameters.AddWithValue("@laddition", order.laddition);
-                        cmd.Parameters.AddWithValue("@rheight", order.rheight);
-                        cmd.Parameters.AddWithValue("@rdip", order.rdip);
-                        cmd.Parameters.AddWithValue("@lheight", order.lheight);
-                        cmd.Parameters.AddWithValue("@ldip", order.ldip);
-                        cmd.Parameters.AddWithValue("@fardip", order.fardip);
-                        cmd.Parameters.AddWithValue("@a", order.a);
-                        cmd.Parameters.AddWithValue("@b", order.b);
-                        cmd.Parameters.AddWithValue("@ed", order.ed);
-                        cmd.Parameters.AddWithValue("@bridge", order.bridge);
-                        cmd.Parameters.AddWithValue("@antireflection", order.antireflection);
-                        cmd.Parameters.AddWithValue("@material", order.material);
-                        cmd.Parameters.AddWithValue("@design", order.design);
-                        cmd.Parameters.AddWithValue("@tint", order.tint);
-                        cmd.Parameters.AddWithValue("@notes", order.notes);
-                        cmd.Parameters.AddWithValue("@year", order.year);
-                        cmd.Parameters.AddWithValue("@NumPaquete", order.NumPaquete);
+
+                        cmd.Parameters.AddWithValue("@custnum", custnum);
+                        cmd.Parameters.AddWithValue("@ponumber", ponumber);
+                        cmd.Parameters.AddWithValue("@rsphere",rsphere);
+                        cmd.Parameters.AddWithValue("@rcylinder", rcylinder);
+                        cmd.Parameters.AddWithValue("@raxis", raxis);
+                        cmd.Parameters.AddWithValue("@raddition", raddition);
+                        cmd.Parameters.AddWithValue("@lsphere", lsphere);
+                        cmd.Parameters.AddWithValue("@lcylinder", lcylinder);
+                        cmd.Parameters.AddWithValue("@laxis", laxis);
+                        cmd.Parameters.AddWithValue("@laddition", laddition);
+                        cmd.Parameters.AddWithValue("@rheight", rheight);
+                        cmd.Parameters.AddWithValue("@rdip", rdip);
+                        cmd.Parameters.AddWithValue("@lheight", lheight);
+                        cmd.Parameters.AddWithValue("@ldip", ldip);
+                        cmd.Parameters.AddWithValue("@fardip", fardip);
+                        cmd.Parameters.AddWithValue("@a", a);
+                        cmd.Parameters.AddWithValue("@b", b);
+                        cmd.Parameters.AddWithValue("@ed", ed);
+                        cmd.Parameters.AddWithValue("@bridge", bridge);
+                        cmd.Parameters.AddWithValue("@antireflection", antireflection);
+                        cmd.Parameters.AddWithValue("@material", material);
+                        cmd.Parameters.AddWithValue("@design", design);
+                        cmd.Parameters.AddWithValue("@tint", tint);
+                        cmd.Parameters.AddWithValue("@notes", notes);
                         var returnParam = new SqlParameter("@ReturnVal", SqlDbType.Int)
                         {
                             Direction = ParameterDirection.ReturnValue
@@ -107,7 +106,11 @@ namespace FtpRxtoJsonService.css
                     }
 
                 }
-                return returnValue == 0;
+                if (returnValue == 1)
+                {
+                    NotificarReg();
+                }
+                return returnValue != -1;
             }
             catch (Exception ex)
             {
@@ -115,6 +118,12 @@ namespace FtpRxtoJsonService.css
                 return false;
             }
         }
+
+        private void NotificarReg()
+        {
+            //
+        }
+
         public bool GetWebOrderFromOrder(Root root)
         {
             // Validar que root y root.order no sean nulos
@@ -139,7 +148,6 @@ namespace FtpRxtoJsonService.css
                 lheight = (int)root.order.rx_os.rx_os_seg_height;
                 ldip = (decimal)root.order.rx_os.rx_os_near;
                 fardip = ldip + rdip;// revisar dip
-
                 a = root.order.frame.frame_a;
                 b = root.order.frame.frame_b;
                 ed = root.order.frame.frame_ed;
@@ -172,11 +180,10 @@ namespace FtpRxtoJsonService.css
                     design = 1;
                 }
                 tint = root.order.lens_od.x_lens_od_color_code;
-                year = root.order.date_ordered.Year;
                 NumPaquete = root.order.customer_tray_num + "-" + root.order.customer_po_num; // Customer-po-núm - tray-num = numpaquete
                 notes = NumPaquete + root.order.items[0].item_description; // revisar no importa
                 ponumber = root.order.customer_tray_num + "-" + root.order.customer_po_num;
-                
+                custnum = root.order.cust_num;
                 return true;
             }
             catch (Exception e)

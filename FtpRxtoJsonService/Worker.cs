@@ -38,14 +38,12 @@ namespace FtpRxtoJsonService
                     {
                         bool isJF = false;
                         bool isRx = false;
-                        foreach (string dir in ftpDetails.ListDirectories())
+                        //verificamos si existe el jobfolder para trabjar con el
+                        if (ftpDetails.IsFileOnDir(server.jobfolder.Trim()))
                         {
-                            //verificamos si existe el jobfolder para trabjar con el
-                            if (dir == server.jobfolder.Trim())
-                            {
-                                isJF = true;
-                            }
+                            isJF = true;
                         }
+
                         if (isJF)
                         {
                             //verificamos si existen archivos rx
@@ -66,7 +64,7 @@ namespace FtpRxtoJsonService
                                         ftpDetails = ftpDetails,
                                         _logger = _logger,
                                         processpath = server.jobfolder + "/" + processpath,
-                                        order_data = new WebOrders { connectionString = conectionstring },
+                                        order_data = new WebOrders {connectionString = conectionstring },
                                         clientserver = new WebRequestGet
                                         {
                                             ftpServer = server.name,

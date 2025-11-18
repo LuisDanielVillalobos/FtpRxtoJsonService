@@ -96,60 +96,41 @@ namespace FtpRxtoJsonService.css
         }
         public bool MoveFtpFile(string source, string destination)
         {
-
-            Uri uriSource = new Uri(this.ftpServer  + source, UriKind.Absolute );
-            Uri uriDestination = new Uri(this.ftpServer + destination, UriKind.Absolute );
+            int pos = destination.LastIndexOf('/');
+            string ruta = destination.Substring(0, pos + 1);
+            string archivo = destination.Substring(pos + 1);
+            if (IsFileOnDir(archivo, ruta))
+            {
+                Random rng = new Random();
+                string name = Path.GetFileNameWithoutExtension(destination);
+                string ext = Path.GetExtension(destination);
+                int rndom = rng.Next(1000);
+                destination = ruta + name + "-" + rndom.ToString() + ext;
+            }
+            Uri uriSource = new Uri(this.ftpServer + source, UriKind.Absolute);
+            Uri uriDestination = new Uri(this.ftpServer + destination, UriKind.Absolute);
 
             // Do the files exist?
-/*            if (!FtpFileExists(uriSource.AbsolutePath))
-            {
-                throw (new FileNotFoundException(string.Format("Source '{0}' not found!", uriSource.AbsolutePath)));
-            }
-
-            if (FtpFileExists(uriDestination.AbsolutePath))
-            {
-                throw (new ApplicationException(string.Format("Target '{0}' already exists!", uriDestination.AbsolutePath)));
-            }*/
+            /*            if (!FtpFileExists(uriSource.AbsolutePath))
+                        {
+                            throw (new FileNotFoundException(string.Format("Source '{0}' not found!", uriSource.AbsolutePath)));
+                        }
+            */
             Uri targetUriRelative = uriSource.MakeRelativeUri(uriDestination);
-
             //perform rename
             var ftp = (FtpWebRequest)WebRequest.Create(uriSource.AbsoluteUri);
             ftp.Credentials = new NetworkCredential(ftpUsername, ftpPassword);
             ftp.Method = WebRequestMethods.Ftp.Rename;
             ftp.RenameTo = Uri.UnescapeDataString(targetUriRelative.OriginalString);
-
             FtpWebResponse response = (FtpWebResponse)ftp.GetResponse();
-
             return true;
+        }
 
-        }
-        /*  public async Task<bool> MoveFtpFile(string sourceFilePath="", string destinationFilePath = "")
-        {
-            try
-            {
-                // Create the FtpWebRequest for renaming the file
-                FtpWebRequest request = (FtpWebRequest)WebRequest.Create(ftpServer + sourceFilePath);
-                request.Method = WebRequestMethods.Ftp.Rename;
-                request.Credentials = new NetworkCredential(ftpUsername, ftpPassword);
-                request.UsePassive = true; 
-                request.RenameTo = destinationFilePath; // The new path and name for the file
-            
-                WebResponse response = request.GetResponse();
-                return true;
-            }
-            catch (WebException ex)
-            {
-                _logger.LogError("Error while moving file:" + ex.Message);
-                return false;
-                //throw new Exception($"An error while moving file: {ex.Message}");
-            }
-        }
-*/        
         public void Delete(string path)
         {
             //
         }
-        public string[] ListDirectories(string dirpath="")
+        public string[] ListDirectories(string dirpath = "")
         {
             string[] dir;
             var content = new List<string>();
@@ -173,17 +154,16 @@ namespace FtpRxtoJsonService.css
             }
             return dir;
         }
-        public bool IsRxOnDir(string dirpath)
+        public bool IsFileOnDir(string file, string dirpath = "")
         {
-            string[] dirList = ListDirectories(dirpath);
-            foreach (string dir in dirList)
+            foreach (string dir in ListDirectories(dirpath))
             {
-
+                if (file == dir)
+                    return true;
             }
             return false;
-
         }
-        public string[] GetRxFileName(string dirpath ="")
+        public string[] GetRxFileName(string dirpath = "")
         {
             string[] dirList = ListDirectories(dirpath);
             var rxfiles = new List<string>();
