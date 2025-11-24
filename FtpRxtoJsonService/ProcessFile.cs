@@ -226,7 +226,8 @@ namespace FtpRxtoJsonService.css
                 _logger.LogError("Exception: " + e.Message);
             }
         }
-        //metodo para escribir cada seccion del json
+    
+            //metodo para escribir cada seccion del json
         private void WriteSection(StreamWriter sw, string section, List<string> values)
         {
             sw.WriteLine("\"" + section + "\": {");

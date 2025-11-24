@@ -21,7 +21,7 @@ namespace FtpRxtoJsonService
                 ftpServer = _configuration["ftpdata:ftpServer"],
                 ftpUsername = _configuration["ftpdata:ftpUsername"],
                 ftpPassword = _configuration["ftpdata:ftpPassword"],
-                _logger = _logger
+                _logger = _logger,
             };
             string processpath = _configuration["ftpdata:processpath"];
             string errorpath = _configuration["ftpdata:errorpath"];
@@ -64,7 +64,13 @@ namespace FtpRxtoJsonService
                                         ftpDetails = ftpDetails,
                                         _logger = _logger,
                                         processpath = server.jobfolder + "/" + processpath,
-                                        order_data = new WebOrders {connectionString = conectionstring },
+                                        order_data = new WebOrders
+                                        {
+                                            connectionString = conectionstring,
+                                            EmailFrom = _configuration["Email:EmailFrom"],
+                                            EmailTo = _configuration["Email:EmailTo"],
+                                            EmailPass= _configuration["Email:EmailPass"]
+                                        },
                                         clientserver = new WebRequestGet
                                         {
                                             ftpServer = server.name,

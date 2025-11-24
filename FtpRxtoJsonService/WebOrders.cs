@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
-
+using System.Net;
+using System.Net.Mail;
+using System.Reflection;
+using System.Text;
 using Microsoft.Data.SqlClient;
 using static Azure.Core.HttpHeader;
 
@@ -10,7 +14,7 @@ namespace FtpRxtoJsonService.css
 
     public class WebOrders
     {
-        public int custnum {  get; set; }
+        public int custnum { get; set; }
         public string ponumber { get; set; }
         public double rsphere { get; set; }
         public double rcylinder { get; set; }
@@ -39,6 +43,9 @@ namespace FtpRxtoJsonService.css
         public string connectionString { get; set; }
         private const string storedProcedureName = "usp_InsertWebOrder";
         public ILogger _logger { get; set; }
+        public string EmailFrom { get; set; }
+        public string EmailPass { get; set; }
+        public string EmailTo { get; set; }
 
         public DataTable GetOrders()
         {
@@ -59,20 +66,19 @@ namespace FtpRxtoJsonService.css
 
         public bool InsertOrder()
         {
-            int rows;
             int returnValue;
             try
             {
+                var datatable = new DataTable();
                 using (SqlConnection con = new SqlConnection(connectionString))
                 {
                     using (SqlCommand cmd = new SqlCommand(storedProcedureName, con))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         // Add parameters
-
                         cmd.Parameters.AddWithValue("@custnum", custnum);
                         cmd.Parameters.AddWithValue("@ponumber", ponumber);
-                        cmd.Parameters.AddWithValue("@rsphere",rsphere);
+                        cmd.Parameters.AddWithValue("@rsphere", rsphere);
                         cmd.Parameters.AddWithValue("@rcylinder", rcylinder);
                         cmd.Parameters.AddWithValue("@raxis", raxis);
                         cmd.Parameters.AddWithValue("@raddition", raddition);
@@ -94,23 +100,22 @@ namespace FtpRxtoJsonService.css
                         cmd.Parameters.AddWithValue("@design", design);
                         cmd.Parameters.AddWithValue("@tint", tint);
                         cmd.Parameters.AddWithValue("@notes", notes);
-                        var returnParam = new SqlParameter("@ReturnVal", SqlDbType.Int)
-                        {
-                            Direction = ParameterDirection.ReturnValue
-                        };
-                        cmd.Parameters.Add(returnParam);
 
+                        using (SqlDataAdapter adapter = new SqlDataAdapter(cmd))
+                        {
+                            adapter.Fill(datatable);
+                        }
                         con.Open();
-                        rows = cmd.ExecuteNonQuery();
-                        returnValue = Convert.ToInt32(returnParam.Value);
+                        cmd.ExecuteNonQuery();
                     }
 
                 }
-                if (returnValue == 1)
+
+                if (datatable.Rows.Count > 1)
                 {
-                    NotificarReg();
+                    NotificarReg(datatable);
                 }
-                return returnValue != -1;
+                return true;
             }
             catch (Exception ex)
             {
@@ -119,9 +124,59 @@ namespace FtpRxtoJsonService.css
             }
         }
 
-        private void NotificarReg()
+        private void NotificarReg(DataTable dataTable)
         {
-            //
+            try
+            {
+                using (var client = new SmtpClient())
+                {
+                    client.Host = "smtp.gmail.com";
+                    client.Port = 587;
+                    client.DeliveryMethod = SmtpDeliveryMethod.Network;
+                    client.UseDefaultCredentials = false;
+                    client.EnableSsl = true;
+                    client.Credentials = new NetworkCredential(EmailFrom, EmailPass);
+                    using (var message = new MailMessage(
+                        from: new MailAddress(EmailFrom, "OCUCO Service"),
+                        to: new MailAddress(EmailTo, "Usuario")
+                        ))
+                    {
+                        message.Subject = "Duplicated job " + ponumber;
+                        message.IsBodyHtml = true;
+                        var Body = new StringBuilder();
+                        Body.Append("<h3>Archivo duplicado</h3>");
+                        Body.Append($"<p>El archivo con ponumber <b>{ponumber}</b> ya estaba registrado. Se cambió el estado.</p>");
+                        Body.Append("<table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse;'>");
+
+                        // Encabezados
+                        Body.Append("<tr style='background-color:#f0f0f0;'>");
+                        foreach (DataColumn col in dataTable.Columns)
+                        {
+                            Body.Append($"<th>{col.ColumnName}</th>");
+                        }
+                        Body.Append("</tr>");
+
+                        // Filas
+                        foreach (DataRow row in dataTable.Rows)
+                        {
+                            Body.Append("<tr>");
+                            foreach (var item in row.ItemArray)
+                            {
+                                Body.Append($"<td>{item}</td>");
+                            }
+                            Body.Append("</tr>");
+                        }
+                        Body.Append("</table>");
+                        message.Body = Body.ToString();
+                        client.Send(message);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning("Trouble with email: " + e.Message);
+            }
+
         }
 
         public bool GetWebOrderFromOrder(Root root)
@@ -156,7 +211,6 @@ namespace FtpRxtoJsonService.css
                 {
                     if (item.item_description == "FRAME")
                         antireflection = root.order.items[0].item_description;
-
                 }
                 if (antireflection.EndsWith("Augen Standard AR"))
                     antireflection = "PREMIUM";
@@ -172,8 +226,6 @@ namespace FtpRxtoJsonService.css
                 {
                     material = 1;
                 }
-                if (material == 01542)
-                { material = 1; }
                 design = root.order.lens_od.x_lens_od_material_code;
                 if (design == 0)
                 {
