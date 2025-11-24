@@ -14,8 +14,4 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.10" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="SetupRxtoJson\Debug\" />
-  </ItemGroup>
 </Project>

@@ -37,6 +37,7 @@ if (args is { Length: 1 })
 
     return;
 }
+
 IHost host = Host.CreateDefaultBuilder(args)
 .UseWindowsService()
 .ConfigureLogging((context, logging) =>
