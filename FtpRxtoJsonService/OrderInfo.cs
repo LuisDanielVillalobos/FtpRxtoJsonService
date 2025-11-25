@@ -79,11 +79,11 @@
         public int customer_tray_num { get; set; }
         public int Customer_tray { get; set; }
         public int x_tray_num { get; set; }
-        public DateTime date_ordered { get; set; } //revisar formato para saber si transformarlo a string o datetime  12-30-11' to 12/30/2011.  
+        public DateTime date_ordered { get; set; }  
         public string dr_name { get; set; }
         public string x_doc_no { get; set; }
         public int x_bill_cust_no { get; set; }
-        public int x_ship_cust_no { get; set; }
+        public string x_ship_cust_no { get; set; }
         public string x_invoice_only { get; set; }
         public string x_rem_operator { get; set; }
         public string x_inno_user { get; set; }

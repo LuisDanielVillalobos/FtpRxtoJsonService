@@ -273,7 +273,8 @@ namespace FtpRxtoJsonService.css
             if (esNumerico)// && !iniciaConCero)
             {
                 // número normal sin comillas
-                if (campo.EndsWith("upc") || campo.EndsWith("desc") || campo.EndsWith("sku") || campo.EndsWith("doc_no"))
+                if (campo.EndsWith("upc") || campo.EndsWith("desc") || campo.EndsWith("sku")
+                    || campo.EndsWith("doc_no") || campo.EndsWith("ship_cust_no"))
                     line = $"\t\"{campo}\": \"{valor}\"";
                 else
                 {

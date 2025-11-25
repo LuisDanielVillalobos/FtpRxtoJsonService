@@ -1,20 +1,21 @@
 file_version:1.6
 start_order
-order_id:25
+order_id:77
 agent_version:2.10.30.124
 agent_name:Innovations
 lab_num:0
 cust_num:98765
 cust_seq_num:
-customer_po_num:POTEST
-customer_tray_num:100025
-Customer_tray:100025
-x_tray_num:100025
-date_ordered:2025-11-06-08-04-37
+customer_po_num:70.244.38966
+customer_tray_num:100085
+Customer_tray:100085
+x_tray_num:100085
+date_ordered:2025-11-24-10-23-57
+date_promised:2025-11-24-10-23-58
 dr_name:
-x_doc_no:RXNUMTEST
-x_bill_cust_no:100
-x_ship_cust_no:100
+x_doc_no:38966
+x_bill_cust_no:899
+x_ship_cust_no:MSA-47
 x_invoice_only:N
 x_rem_operator:OCUCO
 x_inno_user:OCUCO
@@ -33,52 +34,48 @@ x_dprovider_county:
 x_dprovider_country:US
 frame_tracing:TRACED
 frame_edge:UNCUT
-frame_upc:818229021580
+frame_upc:818229021405
 frame_vendor:Twelve84
-frame_model:BASEL
-frame_color:700
-frame_eye:52
-frame_bridge:20
-frame_temple:145
+frame_model:MILAN
+frame_color:608
+frame_eye:51
+frame_bridge:15
+frame_temple:140
 frame_status:LENSES ONLY
-frame_a:52.52
-frame_b:41.63
-frame_dbl:19.26
-frame_ed:56.82
-frame_circ:155.11
-frame_long_rad:56.82
-frame_rad_angle:150.30
+frame_a:50.73
+frame_b:35.24
+frame_dbl:14.98
+frame_ed:53.46
+frame_circ:141.28
+frame_long_rad:53.46
+frame_rad_angle:156.60
 frame_mounting:Zyl
 rx_eye:3
-x_lens_od_material_code:20
-x_lens_od_style_code:4
-x_lens_od_color_code:0
-x_lens_od_material_desc:Trinity FF 12
-x_lens_od_style_desc:CR39
-x_lens_od_color_desc:Clear
-rx_od_sphere:2.00
-rx_od_cylinder:-1.00
-rx_od_axis:90
-rx_od_far:36.39
-rx_od_near:36.39
-rx_od_add:1.00
-rx_od_seg_height:20.82
+lens_od_style_code:01277
+lens_od_material_code:010
+lens_od_color_code:00001
+x_lens_od_material_desc:Plastic-High Index 1.66
+x_lens_od_style_desc:Single Vision-Augen Aspheric
+x_lens_od_color_desc:SRCoated
+rx_od_sphere:-12.50
+rx_od_cylinder:-1.25
+rx_od_axis:130
+rx_od_far:29.00
+rx_od_oc_height:24.00
 rx_od_prism:0.00
 rx_od_prism_dir:ANGLE
 rx_od_prism_angle:0
-x_lens_os_material_code:20
-x_lens_os_style_code:4
-x_lens_os_color_code:0
-x_lens_os_material_desc:Trinity FF 12
-x_lens_os_style_desc:CR39
-x_lens_os_color_desc:Clear
-rx_os_sphere:2.00
-rx_os_cylinder:-1.00
-rx_os_axis:90
-rx_os_far:36.39
-rx_os_near:36.39
-rx_os_add:1.00
-rx_os_seg_height:20.82
+lens_os_style_code:01277
+lens_os_material_code:010
+lens_os_color_code:00001
+x_lens_os_material_desc:Plastic-High Index 1.66
+x_lens_os_style_desc:Single Vision-Augen Aspheric
+x_lens_os_color_desc:SRCoated
+rx_os_sphere:-10.75
+rx_os_cylinder:-1.50
+rx_os_axis:30
+rx_os_far:29.50
+rx_os_oc_height:24.00
 rx_os_prism:0.00
 rx_os_prism_dir:ANGLE
 rx_os_prism_angle:0
@@ -88,7 +85,7 @@ item_source:MISC
 item_side:NONE
 item_part_rx:Y
 item_quantity:1
-item_description:Coatings - Anti-Reflective - Augen Standard AR
+item_description:Coatings - Anti-Reflective - Premium AR
 item_end
 item_start
 item_part_rx:N
