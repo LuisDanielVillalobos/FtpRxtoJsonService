@@ -105,8 +105,6 @@ namespace FtpRxtoJsonService.css
                         {
                             adapter.Fill(datatable);
                         }
-                        con.Open();
-                        cmd.ExecuteNonQuery();
                     }
 
                 }
