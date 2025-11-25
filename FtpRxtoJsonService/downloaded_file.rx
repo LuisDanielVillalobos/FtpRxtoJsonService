@@ -1,18 +1,18 @@
 file_version:1.6
 start_order
-order_id:25
+order_id:26
 agent_version:2.10.30.124
 agent_name:Innovations
 lab_num:0
 cust_num:98765
 cust_seq_num:
-customer_po_num:POTEST
-customer_tray_num:100025
-Customer_tray:100025
-x_tray_num:100025
-date_ordered:2025-11-06-08-04-37
+customer_po_num:PO2TEST
+customer_tray_num:100026
+Customer_tray:100026
+x_tray_num:100026
+date_ordered:2025-11-06-08-09-55
 dr_name:
-x_doc_no:RXNUMTEST
+x_doc_no:RX2TEST
 x_bill_cust_no:100
 x_ship_cust_no:100
 x_invoice_only:N
@@ -31,54 +31,54 @@ x_dprovider_zip:92154
 x_dprovider_state:California
 x_dprovider_county:
 x_dprovider_country:US
-frame_tracing:TRACED
+frame_tracing:NO TRACE
 frame_edge:UNCUT
-frame_upc:818229021580
+frame_upc:818229021139
 frame_vendor:Twelve84
-frame_model:BASEL
-frame_color:700
-frame_eye:52
-frame_bridge:20
-frame_temple:145
+frame_model:DARWIN
+frame_color:1001
+frame_eye:50
+frame_bridge:19
+frame_temple:140
 frame_status:LENSES ONLY
-frame_a:52.52
-frame_b:41.63
-frame_dbl:19.26
-frame_ed:56.82
-frame_circ:155.11
-frame_long_rad:56.82
-frame_rad_angle:150.30
-frame_mounting:Zyl
+frame_a:0.00
+frame_b:0.00
+frame_dbl:19.00
+frame_ed:0.00
+frame_circ:0.00
+frame_long_rad:0.00
+frame_rad_angle:225.00
+frame_mounting:
 rx_eye:3
-x_lens_od_material_code:20
-x_lens_od_style_code:4
-x_lens_od_color_code:0
-x_lens_od_material_desc:Trinity FF 12
-x_lens_od_style_desc:CR39
-x_lens_od_color_desc:Clear
+x_lens_od_material_code:42
+x_lens_od_style_code:14
+x_lens_od_color_code:141
+x_lens_od_material_desc:Trinity Sharp
+x_lens_od_style_desc:1.67
+x_lens_od_color_desc:Transitions Brown
 rx_od_sphere:2.00
 rx_od_cylinder:-1.00
 rx_od_axis:90
-rx_od_far:36.39
-rx_od_near:36.39
+rx_od_far:9.50
+rx_od_near:9.50
 rx_od_add:1.00
-rx_od_seg_height:20.82
+rx_od_seg_height:18.00
 rx_od_prism:0.00
 rx_od_prism_dir:ANGLE
 rx_od_prism_angle:0
-x_lens_os_material_code:20
-x_lens_os_style_code:4
-x_lens_os_color_code:0
-x_lens_os_material_desc:Trinity FF 12
-x_lens_os_style_desc:CR39
-x_lens_os_color_desc:Clear
+x_lens_os_material_code:42
+x_lens_os_style_code:14
+x_lens_os_color_code:141
+x_lens_os_material_desc:Trinity Sharp
+x_lens_os_style_desc:1.67
+x_lens_os_color_desc:Transitions Brown
 rx_os_sphere:2.00
 rx_os_cylinder:-1.00
 rx_os_axis:90
-rx_os_far:36.39
-rx_os_near:36.39
+rx_os_far:9.50
+rx_os_near:9.50
 rx_os_add:1.00
-rx_os_seg_height:20.82
+rx_os_seg_height:18.00
 rx_os_prism:0.00
 rx_os_prism_dir:ANGLE
 rx_os_prism_angle:0
@@ -88,12 +88,12 @@ item_source:MISC
 item_side:NONE
 item_part_rx:Y
 item_quantity:1
-item_description:Coatings - Anti-Reflective - Augen Standard AR
+item_description:Coatings - Anti-Reflective - Augen Premium AR
 item_end
 item_start
 item_part_rx:N
 item_source:MISC
-sku:Zyl
+sku:
 item_description:FRAME
 item_quantity:+002.00
 item_side:NONE

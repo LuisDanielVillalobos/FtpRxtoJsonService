@@ -78,7 +78,8 @@ namespace FtpRxtoJsonService
                                             ftpServer = server.name,
                                             ftpUsername = server.username,
                                             ftpPassword = server.password,
-                                            _logger = _logger
+                                            _logger = _logger,
+                                            localpath = localpath
                                         }
                                     };
                                     if (processFile.ProcessRx())
