@@ -27,6 +27,7 @@ namespace FtpRxtoJsonService.css
         public WebRequestGet ftpDetails { get; set; }
         public string processpath { get; set; }
         public WebRequestGet clientserver { get; set; }
+        public string localpath { get; set; }
         //lee el archivo hashref
         public bool ProcessRx()
         {
@@ -125,7 +126,7 @@ namespace FtpRxtoJsonService.css
                 archivo = arcName;
                 archivo = archivo.Remove(arcName.Length - 3);
                 //Pass the filepath and filename to the StreamWriter Constructor
-                StreamWriter sw = new StreamWriter("C:\\Users\\luis3\\Downloads\\" + archivo + "_local.json");
+                StreamWriter sw = new StreamWriter(localpath + archivo + "_local.json");
                 //inicio del archivo json root
                 sw.WriteLine("{");
                 sw.WriteLine("\"order\": {");
@@ -166,7 +167,7 @@ namespace FtpRxtoJsonService.css
                 //fin de la orden
                 sw.WriteLine("}\n}");
                 sw.Close();
-                string jsonString = File.ReadAllText("C:\\Users\\luis3\\Downloads\\" + archivo + "_local.json");
+                string jsonString = File.ReadAllText(localpath + archivo + "_local.json");
                 order = JsonSerializer.Deserialize<Root>(jsonString)!;
                 return true;
 
@@ -199,9 +200,13 @@ namespace FtpRxtoJsonService.css
                         throw new Exception("Error al insertar la orden");
                     else
                     {
-                        ClientOrders clientorder = new();
-                        clientorder._logger = _logger;
-                        clientorder.connectionString = order_data.connectionString;
+                        ClientOrders clientorder = new ClientOrders
+                        {
+                            localpath = localpath,
+                            _logger = _logger,
+                            connectionString = order_data.connectionString
+                        };
+
 
                         if (clientorder.Fillorder(order))
                         {

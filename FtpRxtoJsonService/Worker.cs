@@ -26,6 +26,7 @@ namespace FtpRxtoJsonService
             string processpath = _configuration["ftpdata:processpath"];
             string errorpath = _configuration["ftpdata:errorpath"];
             string conectionstring = _configuration["WebOrders:connectionString"];
+            string localpath = _configuration["localpath"];
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -64,12 +65,13 @@ namespace FtpRxtoJsonService
                                         ftpDetails = ftpDetails,
                                         _logger = _logger,
                                         processpath = server.jobfolder + "/" + processpath,
+                                        localpath = localpath,
                                         order_data = new WebOrders
                                         {
                                             connectionString = conectionstring,
                                             EmailFrom = _configuration["Email:EmailFrom"],
                                             EmailTo = _configuration["Email:EmailTo"],
-                                            EmailPass= _configuration["Email:EmailPass"]
+                                            EmailPass = _configuration["Email:EmailPass"]
                                         },
                                         clientserver = new WebRequestGet
                                         {
@@ -78,7 +80,6 @@ namespace FtpRxtoJsonService
                                             ftpPassword = server.password,
                                             _logger = _logger
                                         }
-
                                     };
                                     if (processFile.ProcessRx())
                                         if (processFile.BuildOrder())
@@ -93,6 +94,9 @@ namespace FtpRxtoJsonService
                                             }
                                         }
                                     i++;
+                                    string[] filePaths = Directory.GetFiles(localpath);
+                                    foreach (string filePath in filePaths)
+                                        File.Delete(filePath);
                                 }
                                 //Errores en archivos
                                 var errorfiles = new List<string>();
@@ -118,6 +122,7 @@ namespace FtpRxtoJsonService
                                         ftpDetails.MoveFtpFile(server.jobfolder + "/" + file, server.jobfolder + "/" + errorpath + file);
                                     }
                                 }
+
                             }
 
                         }

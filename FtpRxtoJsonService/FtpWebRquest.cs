@@ -15,6 +15,7 @@ namespace FtpRxtoJsonService.css
         public string ftpUsername { get; set; }
         public string ftpPassword { get; set; }
         public ILogger _logger { get; set; }
+        public string localpath { get; set; }
 
         /*public FileStream Download(string path)
         {
@@ -39,7 +40,7 @@ namespace FtpRxtoJsonService.css
         }*/
         public string Download(string path)
         {
-            string localFile = Path.Combine(Directory.GetCurrentDirectory(), "downloaded_file.rx");
+            string localFile = localpath + "downloaded_file.rx";
             try
             {
                 // Crear la solicitud FTP

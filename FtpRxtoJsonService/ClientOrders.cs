@@ -63,6 +63,7 @@ namespace FtpRxtoJsonService.css
         public short EdgeThickness { get; set; }
         public ILogger _logger { get; set; }
         public string connectionString { get; set; }
+        public string localpath { get; set; }
 
         public bool Fillorder(Root root)
         {
@@ -127,12 +128,13 @@ namespace FtpRxtoJsonService.css
         {
             try
             {
-                string path = "C:\\Users\\luis3\\Downloads\\" + nombre + ".json";
+                string path = localpath + nombre + ".json";
                 string jsonString = "";
                 jsonString = JsonSerializer.Serialize(this);
                 StreamWriter sw = new StreamWriter(path);
                 sw.WriteLine(jsonString);
                 sw.Close();
+                
                 return path.Trim();
             }
             catch 
