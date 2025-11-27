@@ -8,7 +8,6 @@ namespace FtpRxtoJsonService.css
 
     public class ClientOrders
     {
-
         public ClientOrders()
         {
             Ponum = "";
@@ -61,9 +60,12 @@ namespace FtpRxtoJsonService.css
         public string Accessories5 { get; set; }
         public short CentralThickness { get; set; }
         public short EdgeThickness { get; set; }
-        public ILogger _logger { get; set; }
         public string connectionString { get; set; }
         public string localpath { get; set; }
+
+
+
+
 
         public bool Fillorder(Root root)
         {
@@ -117,9 +119,9 @@ namespace FtpRxtoJsonService.css
                 Ponum = root.order.customer_tray_num + "-" + root.order.customer_po_num; ;
                 
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                _logger.LogError(ex.Message);
+                throw new Exception(e.Message);
                 return false;
             }
             return true;
@@ -137,9 +139,9 @@ namespace FtpRxtoJsonService.css
                 
                 return path.Trim();
             }
-            catch 
+            catch(Exception e)
             {
-                return "";
+                throw new Exception(e.Message);
             }
         }
         public int GetAntiRefl(string anti_refl)

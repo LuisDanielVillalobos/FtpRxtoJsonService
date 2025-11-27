@@ -1,9 +1,11 @@
 ﻿using System.Diagnostics;
 using System.Globalization;
+using System.Linq.Expressions;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using FtpRxtoJsonService;
+using Microsoft.Identity.Client;
 
 
 namespace FtpRxtoJsonService.css
@@ -20,19 +22,15 @@ namespace FtpRxtoJsonService.css
         private List<List<string>> item_list = new();
         private string archivo = "";
         Root? order = null;
-        public WebOrders order_data { get; set; }
+        public string conectionstring { get; set; }
         public string arcName { get; set; }
-        public string filepath { get; set; }
-        public ILogger _logger { get; set; }
+        public WorkerLogger _logger { get; set; }
         public WebRequestGet ftpDetails { get; set; }
-        public string processpath { get; set; }
         public WebRequestGet clientserver { get; set; }
-        public string localpath { get; set; }
         //lee el archivo hashref
-        public bool ProcessRx()
+        public bool ProcessRx(string filepath)
         {
             string line;
-
             try
             {
                 string fs = ftpDetails.Download(filepath);
@@ -113,13 +111,12 @@ namespace FtpRxtoJsonService.css
             }
             catch (Exception e)
             {
-
-                _logger.LogError("Exception: " + e.Message);
+                _logger.LogError(e, arcName, "reading Rx");
                 return false;
             }
         }
         //escribe el archivo json
-        public bool BuildOrder()
+        public bool BuildOrder(string localpath)
         {
             try
             {
@@ -174,65 +171,60 @@ namespace FtpRxtoJsonService.css
             }
             catch (Exception e)
             {
-                _logger.LogError("Exception: " + e.Message);
+                _logger.LogError(e, arcName, "parsing order");
                 return false;
             }
         }
         //procesa la orden
-        public void InsertOrder()
+        public bool InsertOrder()
         {
             try
             {
+                WebOrders order_data = new WebOrders
+                {
+                    connectionString = conectionstring,
+                    EmailFrom = _logger.EmailFrom,
+                    EmailTo = _logger.EmailTo,
+                    EmailPass = _logger.EmailPass,
+                };
                 if (order == null)
                 {
                     throw new Exception("Order is null.");
                 }
-                order_data._logger = _logger;
-                bool ordersucces = order_data.GetWebOrderFromOrder(order);
-                if (!ordersucces)
-                {
-                    throw new Exception("Error al parsear la order");
-                }
-                else
-                {
-                    bool insertsucces = order_data.InsertOrder();
-                    if (!insertsucces)
-                        throw new Exception("Error al insertar la orden");
-                    else
-                    {
-                        ClientOrders clientorder = new ClientOrders
-                        {
-                            localpath = localpath,
-                            _logger = _logger,
-                            connectionString = order_data.connectionString
-                        };
-
-
-                        if (clientorder.Fillorder(order))
-                        {
-                            string clientpath;
-                            clientpath = clientorder.MakeFile(archivo);
-
-                            if (clientpath != "")
-                                clientserver.Upload(clientpath, archivo + ".json");
-                            else
-                                throw new Exception("Error al generar json para cliente");
-                        }
-                        else
-                            throw new Exception("Error al llenar la informacion para cliente");
-
-                        ftpDetails.MoveFtpFile(filepath, processpath + arcName);
-                        _logger.LogInformation("Fin del registro");
-                    }
-                }
+                bool ordersucces = false;
+                ordersucces = order_data.GetWebOrderFromOrder(order);
+                bool insertsucces = false;
+                insertsucces = order_data.InsertOrder();
+                return true;
             }
-            catch (Exception e)
-            {
-                _logger.LogError("Exception: " + e.Message);
-            }
+            catch (Exception e) { _logger.LogError(e.InnerException, arcName, e.Message); return false; }
         }
-    
-            //metodo para escribir cada seccion del json
+        public void ClientOrder(string filepath, string processpath, string localpath)
+        {
+            try
+            {
+                ClientOrders clientorder = new ClientOrders
+                {
+                    localpath = localpath,
+                    connectionString = conectionstring
+                };
+
+
+                clientorder.Fillorder(order);
+
+                string clientpath = "";
+                clientpath = clientorder.MakeFile(archivo);
+                if (clientpath != "")
+                    clientserver.Upload(clientpath, archivo + ".json");
+                else
+                    throw new Exception("Error al generar el archivo");
+
+                ftpDetails.MoveFtpFile(filepath, processpath + arcName);
+                _logger.LogInformation("Fin del registro");
+            }
+            catch (Exception e) { _logger.LogError(e.InnerException, arcName, e.Message); }
+        }
+        //metodo para escribir cada seccion del json
         private void WriteSection(StreamWriter sw, string section, List<string> values)
         {
             sw.WriteLine("\"" + section + "\": {");

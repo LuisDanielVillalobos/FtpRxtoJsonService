@@ -9,35 +9,16 @@ using Azure;
 
 namespace FtpRxtoJsonService.css
 {
+
     public class WebRequestGet
     {
+
         public string ftpServer { get; set; }
         public string ftpUsername { get; set; }
         public string ftpPassword { get; set; }
-        public ILogger _logger { get; set; }
         public string localpath { get; set; }
 
-        /*public FileStream Download(string path)
-        {
-            // Get the object used to communicate with the server.
-            FtpWebRequest request = (FtpWebRequest)WebRequest.Create(ftpServer+path);
-            request.Method = WebRequestMethods.Ftp.DownloadFile;
 
-            // This example assumes the FTP site uses anonymous logon.
-            request.Credentials = new NetworkCredential(ftpUsername, ftpPassword);
-
-            FtpWebResponse response = (FtpWebResponse)request.GetResponse();
-
-            Stream responseStream = response.GetResponseStream();
-            StreamReader reader = new StreamReader(responseStream);
-            FileStream file = new FileStream("downloaded_file.rx", FileMode.Create);
-            responseStream.CopyTo(file);
-            Console.WriteLine(reader.ReadToEnd());
-            Console.WriteLine($"Download Complete, status {response.StatusDescription}");
-            response.Close();
-            reader.Close();
-            return file;
-        }*/
         public string Download(string path)
         {
             string localFile = localpath + "downloaded_file.rx";
@@ -56,12 +37,12 @@ namespace FtpRxtoJsonService.css
                     responseStream.CopyTo(outputFile);
                 }
                 // Devuelves la ruta local del archivo descargado
+                return localFile;
             }
             catch (WebException ex)
             {
-                _logger.LogError($"An error while downloading file: {ex.Message}");
+                throw new Exception("downloading", ex);
             }
-            return localFile;
         }
         public async Task Upload(string localFilePath, string remotePath)//remotePath es tanto donde se guarda como el nombre del archivo
         {
@@ -90,41 +71,44 @@ namespace FtpRxtoJsonService.css
             }
             catch (WebException ex)
             {
-
-                _logger.LogError($"An error while uploading file: {ex.Message}");
-
+                throw new Exception("uploading", ex);
             }
         }
         public bool MoveFtpFile(string source, string destination)
         {
-            int pos = destination.LastIndexOf('/');
-            string ruta = destination.Substring(0, pos + 1);
-            string archivo = destination.Substring(pos + 1);
-            if (IsFileOnDir(archivo, ruta))
+            try
             {
-                Random rng = new Random();
-                string name = Path.GetFileNameWithoutExtension(destination);
-                string ext = Path.GetExtension(destination);
-                int rndom = rng.Next(1000);
-                destination = ruta + name + "-" + rndom.ToString() + ext;
-            }
-            Uri uriSource = new Uri(this.ftpServer + source, UriKind.Absolute);
-            Uri uriDestination = new Uri(this.ftpServer + destination, UriKind.Absolute);
+                int pos = destination.LastIndexOf('/');
+                string ruta = destination.Substring(0, pos + 1);
+                string archivo = destination.Substring(pos + 1);
+                if (IsFileOnDir(archivo, ruta))
+                {
+                    Random rng = new Random();
+                    string name = Path.GetFileNameWithoutExtension(destination);
+                    string ext = Path.GetExtension(destination);
+                    int rndom = rng.Next(1000);
+                    destination = ruta + name + "-" + rndom.ToString() + ext;
+                }
+                Uri uriSource = new Uri(this.ftpServer + source, UriKind.Absolute);
+                Uri uriDestination = new Uri(this.ftpServer + destination, UriKind.Absolute);
 
-            // Do the files exist?
-            /*            if (!FtpFileExists(uriSource.AbsolutePath))
-                        {
-                            throw (new FileNotFoundException(string.Format("Source '{0}' not found!", uriSource.AbsolutePath)));
-                        }
-            */
-            Uri targetUriRelative = uriSource.MakeRelativeUri(uriDestination);
-            //perform rename
-            var ftp = (FtpWebRequest)WebRequest.Create(uriSource.AbsoluteUri);
-            ftp.Credentials = new NetworkCredential(ftpUsername, ftpPassword);
-            ftp.Method = WebRequestMethods.Ftp.Rename;
-            ftp.RenameTo = Uri.UnescapeDataString(targetUriRelative.OriginalString);
-            FtpWebResponse response = (FtpWebResponse)ftp.GetResponse();
-            return true;
+                // Do the files exist?
+                /*            if (!FtpFileExists(uriSource.AbsolutePath))
+                            {
+                                throw (new FileNotFoundException(string.Format("Source '{0}' not found!", uriSource.AbsolutePath)));
+                            }
+                */
+                Uri targetUriRelative = uriSource.MakeRelativeUri(uriDestination);
+                //perform rename
+                var ftp = (FtpWebRequest)WebRequest.Create(uriSource.AbsoluteUri);
+                ftp.Credentials = new NetworkCredential(ftpUsername, ftpPassword);
+                ftp.Method = WebRequestMethods.Ftp.Rename;
+                ftp.RenameTo = Uri.UnescapeDataString(targetUriRelative.OriginalString);
+                FtpWebResponse response = (FtpWebResponse)ftp.GetResponse();
+
+                return true;
+            }
+            catch (Exception e) { throw new Exception("moving ftp", e); }
         }
 
         public void Delete(string path)
@@ -157,27 +141,35 @@ namespace FtpRxtoJsonService.css
         }
         public bool IsFileOnDir(string file, string dirpath = "")
         {
-            foreach (string dir in ListDirectories(dirpath))
+            try
             {
-                if (file == dir)
-                    return true;
+                foreach (string dir in ListDirectories(dirpath))
+                {
+                    if (file == dir)
+                        return true;
+                }
+                return false;
             }
-            return false;
+            catch (Exception e) { throw new Exception("searching", e); }
         }
         public string[] GetRxFileName(string dirpath = "")
         {
-            string[] dirList = ListDirectories(dirpath);
-            var rxfiles = new List<string>();
-            // Dividir por salto de línea y limpiar espacios
-            //string[] files = dirList.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            // Filtrar solo los que terminen con ".rx"
-            foreach (string file in dirList)
+            try
             {
-                if (file.EndsWith(".rx"))
-                    rxfiles.Add(file);
+                string[] dirList = ListDirectories(dirpath);
+                var rxfiles = new List<string>();
+                // Dividir por salto de línea y limpiar espacios
+                //string[] files = dirList.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                // Filtrar solo los que terminen con ".rx"
+                foreach (string file in dirList)
+                {
+                    if (file.EndsWith(".rx"))
+                        rxfiles.Add(file);
+                }
+                string[] rx = rxfiles.ToArray();
+                return rx;
             }
-            string[] rx = rxfiles.ToArray();
-            return rx;
+            catch (Exception e) { throw new Exception("getting rx", e); }
         }
     }
 

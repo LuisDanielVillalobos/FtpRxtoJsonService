@@ -26,32 +26,34 @@ namespace FtpRxtoJsonService
 
         public List<server> GetServers()
         {
-            var datatable = new DataTable();
-
-
-            using (SqlConnection con = new SqlConnection(connectionString))
+            try
             {
-                using (SqlCommand cmd = new SqlCommand(query, con))
+                var datatable = new DataTable();
+                using (SqlConnection con = new SqlConnection(connectionString))
                 {
-                    cmd.CommandType = CommandType.Text;
-                    using (SqlDataAdapter adapter = new SqlDataAdapter(cmd))
+                    using (SqlCommand cmd = new SqlCommand(query, con))
                     {
-                        adapter.Fill(datatable);
+                        cmd.CommandType = CommandType.Text;
+                        using (SqlDataAdapter adapter = new SqlDataAdapter(cmd))
+                        {
+                            adapter.Fill(datatable);
+                        }
                     }
                 }
-            }
-            foreach (DataRow row in datatable.Rows)
-            {
-                var server = new server
+                foreach (DataRow row in datatable.Rows)
                 {
-                    name = row["servername"].ToString().Trim(),
-                    username = row["username"].ToString().Trim(),
-                    password = row["userpwd"].ToString().Trim(),
-                    jobfolder = row["jobfolder"].ToString().Trim()
-                };
-                this.servers.Add(server);
+                    var server = new server
+                    {
+                        name = row["servername"].ToString().Trim(),
+                        username = row["username"].ToString().Trim(),
+                        password = row["userpwd"].ToString().Trim(),
+                        jobfolder = row["jobfolder"].ToString().Trim()
+                    };
+                    this.servers.Add(server);
+                }
+                return servers;
             }
-            return servers;
+            catch (Exception e) { throw new Exception("getting client servers", e); }
         }
     }
 }

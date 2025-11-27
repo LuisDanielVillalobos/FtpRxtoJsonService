@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿
 using System.Data;
 using System.Net;
 using System.Net.Mail;
 using System.Reflection;
 using System.Text;
 using Microsoft.Data.SqlClient;
-using static Azure.Core.HttpHeader;
 
 namespace FtpRxtoJsonService.css
 {
@@ -37,12 +34,10 @@ namespace FtpRxtoJsonService.css
         public int design { get; set; }
         public int tint { get; set; }
         public string notes { get; set; }
-        //public int year { get; set; }
         public string NumPaquete { get; set; }
         public decimal fardip { get; set; }
         public string connectionString { get; set; }
         private const string storedProcedureName = "usp_InsertWebOrder";
-        public ILogger _logger { get; set; }
         public string EmailFrom { get; set; }
         public string EmailPass { get; set; }
         public string EmailTo { get; set; }
@@ -66,7 +61,6 @@ namespace FtpRxtoJsonService.css
 
         public bool InsertOrder()
         {
-            int returnValue;
             try
             {
                 var datatable = new DataTable();
@@ -100,13 +94,11 @@ namespace FtpRxtoJsonService.css
                         cmd.Parameters.AddWithValue("@design", design);
                         cmd.Parameters.AddWithValue("@tint", tint);
                         cmd.Parameters.AddWithValue("@notes", notes);
-
                         using (SqlDataAdapter adapter = new SqlDataAdapter(cmd))
                         {
                             adapter.Fill(datatable);
                         }
                     }
-
                 }
 
                 if (datatable.Rows.Count > 1)
@@ -115,66 +107,57 @@ namespace FtpRxtoJsonService.css
                 }
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                _logger.LogError("Error inserting order: " + ex.Message);
-                return false;
+                throw new Exception("inserting in DB",e);
             }
         }
 
         private void NotificarReg(DataTable dataTable)
         {
-            try
+            using (var client = new SmtpClient())
             {
-                using (var client = new SmtpClient())
+                client.Host = "smtp.gmail.com";
+                client.Port = 587;
+                client.DeliveryMethod = SmtpDeliveryMethod.Network;
+                client.UseDefaultCredentials = false;
+                client.EnableSsl = true;
+                client.Credentials = new NetworkCredential(EmailFrom, EmailPass);
+                using (var message = new MailMessage(
+                    from: new MailAddress(EmailFrom, "OCUCO Service"),
+                    to: new MailAddress(EmailTo, "Usuario")
+                    ))
                 {
-                    client.Host = "smtp.gmail.com";
-                    client.Port = 587;
-                    client.DeliveryMethod = SmtpDeliveryMethod.Network;
-                    client.UseDefaultCredentials = false;
-                    client.EnableSsl = true;
-                    client.Credentials = new NetworkCredential(EmailFrom, EmailPass);
-                    using (var message = new MailMessage(
-                        from: new MailAddress(EmailFrom, "OCUCO Service"),
-                        to: new MailAddress(EmailTo, "Usuario")
-                        ))
-                    {
-                        message.Subject = "Duplicated job " + ponumber;
-                        message.IsBodyHtml = true;
-                        var Body = new StringBuilder();
-                        Body.Append("<h3>Archivo duplicado</h3>");
-                        Body.Append($"<p>El archivo con ponumber <b>{ponumber}</b> ya estaba registrado. Se cambió el estado.</p>");
-                        Body.Append("<table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse;'>");
+                    message.Subject = "Duplicated job " + ponumber;
+                    message.IsBodyHtml = true;
+                    var Body = new StringBuilder();
+                    Body.Append("<h3>Archivo duplicado</h3>");
+                    Body.Append($"<p>El archivo con ponumber <b>{ponumber}</b> ya estaba registrado. Se cambió el estado.</p>");
+                    Body.Append("<table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse;'>");
 
-                        // Encabezados
-                        Body.Append("<tr style='background-color:#f0f0f0;'>");
-                        foreach (DataColumn col in dataTable.Columns)
+                    // Encabezados
+                    Body.Append("<tr style='background-color:#f0f0f0;'>");
+                    foreach (DataColumn col in dataTable.Columns)
+                    {
+                        Body.Append($"<th>{col.ColumnName}</th>");
+                    }
+                    Body.Append("</tr>");
+
+                    // Filas
+                    foreach (DataRow row in dataTable.Rows)
+                    {
+                        Body.Append("<tr>");
+                        foreach (var item in row.ItemArray)
                         {
-                            Body.Append($"<th>{col.ColumnName}</th>");
+                            Body.Append($"<td>{item}</td>");
                         }
                         Body.Append("</tr>");
-
-                        // Filas
-                        foreach (DataRow row in dataTable.Rows)
-                        {
-                            Body.Append("<tr>");
-                            foreach (var item in row.ItemArray)
-                            {
-                                Body.Append($"<td>{item}</td>");
-                            }
-                            Body.Append("</tr>");
-                        }
-                        Body.Append("</table>");
-                        message.Body = Body.ToString();
-                        client.Send(message);
                     }
+                    Body.Append("</table>");
+                    message.Body = Body.ToString();
+                    client.Send(message);
                 }
             }
-            catch (Exception e)
-            {
-                _logger.LogWarning("Trouble with email: " + e.Message);
-            }
-
         }
 
         public bool GetWebOrderFromOrder(Root root)
@@ -231,15 +214,14 @@ namespace FtpRxtoJsonService.css
                 }
                 tint = root.order.lens_od.x_lens_od_color_code;
                 NumPaquete = root.order.customer_tray_num + "-" + root.order.customer_po_num; // Customer-po-núm - tray-num = numpaquete
-                notes = NumPaquete + root.order.items[0].item_description; // revisar no importa
+                notes = NumPaquete + root.order.items[0].item_description; 
                 ponumber = root.order.customer_tray_num + "-" + root.order.customer_po_num;
                 custnum = root.order.cust_num;
                 return true;
             }
             catch (Exception e)
             {
-                _logger.LogError("Exception: " + e.Message);
-                return false;
+                throw new Exception("parsing order values",e);
             }
         }
     }
