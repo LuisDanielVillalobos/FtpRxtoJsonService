@@ -187,7 +187,7 @@ namespace FtpRxtoJsonService.css
                 a = root.order.frame.frame_a;
                 b = root.order.frame.frame_b;
                 ed = root.order.frame.frame_ed;
-                bridge = root.order.frame.frame_bridge;
+                bridge = root.order.frame.frame_dbl;
                 foreach (var item in root.order.items)
                 {
                     if (item.item_description == "FRAME")

@@ -9,11 +9,14 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 const string ServiceName = "RxtoJsonConverter";
 
+
 if (args is { Length: 1 })
 {
     try
     {
-        string executablePath = "C:\\Users\\luis3\\OneDrive\\Documentos\\Visual Studio 2022\\PVC\\FtpRxtoJsonService\\Precompiled\\FtpRxtoJsonService.exe";
+        string ruta = Directory.GetCurrentDirectory();
+        string parent = Directory.GetParent(ruta).FullName;
+        string executablePath = Path.Combine(parent, "Precompiled", "FtpRxtoJsonService.exe");
         Path.Combine(AppContext.BaseDirectory, "App.WindowsService.exe");
 
         if (args[0] is "/Install")
