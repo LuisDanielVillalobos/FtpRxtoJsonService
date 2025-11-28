@@ -7,17 +7,15 @@ using FtpRxtoJsonService.css;
 using Microsoft.Extensions.Logging.EventLog;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-const string ServiceName = "RxtoJsonConverter";
 
 
 if (args is { Length: 1 })
 {
     try
     {
-        string ruta = Directory.GetCurrentDirectory();
-        string parent = Directory.GetParent(ruta).FullName;
-        string executablePath = Path.Combine(parent, "Precompiled", "FtpRxtoJsonService.exe");
-        Path.Combine(AppContext.BaseDirectory, "App.WindowsService.exe");
+        const string ServiceName = "RxtoJsonConverter";
+        //ruta del proyecto publicado
+        string executablePath = Path.Combine(AppContext.BaseDirectory, "FtpRxtoJsonService.exe");
 
         if (args[0] is "/Install")
         {
